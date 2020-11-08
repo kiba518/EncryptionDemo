@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Org.BouncyCastle.Utilities.Encoders;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,42 @@ namespace EncryptionDemo
     {
         static void Main(string[] args)
         {
+            #region SM3 不可逆
+            byte[] md = new byte[32];
+            byte[] msg1 = Encoding.Default.GetBytes("KIBA518");
+            SM3Digest sm3 = new SM3Digest();
+            sm3.BlockUpdate(msg1, 0, msg1.Length);
+            sm3.DoFinal(md, 0);
+            System.String s = new UTF8Encoding().GetString(Hex.Encode(md));
+            System.Console.Out.WriteLine(s.ToUpper());
+
+            Console.ReadLine();
+            #endregion
+
+            #region SM2
+            SM2Utils.GenerateKeyPair();
+
+            String plainText = "KIBA518";
+            byte[] sourceData = Encoding.Default.GetBytes(plainText);
+
+            //下面的秘钥可以使用generateKeyPair()生成的秘钥内容  
+            // 国密规范正式私钥  
+            String prik = "3690655E33D5EA3D9A4AE1A1ADD766FDEA045CDEAA43A9206FB8C430CEFE0D94";
+            // 国密规范正式公钥  
+            String pubk = "04F6E0C3345AE42B51E06BF50B98834988D54EBC7460FE135A48171BC0629EAE205EEDE253A530608178A98F1E19BB737302813BA39ED3FA3C51639D7A20C7391A";
+
+            System.Console.Out.WriteLine("加密: ");
+            String cipherText = SM2Utils.Encrypt(Hex.Decode(pubk), sourceData);
+            System.Console.Out.WriteLine(cipherText);
+            System.Console.Out.WriteLine("解密: ");
+            plainText = Encoding.Default.GetString(SM2Utils.Decrypt(Hex.Decode(prik), Hex.Decode(cipherText)));
+            System.Console.Out.WriteLine(plainText);
+
+            Console.ReadLine();
+            #endregion
+
+
+
             Console.WriteLine($"MD5-64:{ MD5Helper.Get64Md5("Kiba518")}");
             Console.WriteLine($"MD5-32:{ MD5Helper.Get32Md5("Kiba518")}");
             Console.WriteLine($"SHA1:{ SHA1Helper.Sha1("Kiba518")}");
